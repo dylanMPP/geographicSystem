@@ -74,6 +74,12 @@ public class GeographySystemController {
         } else if (type.equalsIgnoreCase("SELECT * FROM cities WHERE ORDER BY")) {
             return select(command, "ORDER BY", "cities");
 
+        } else if (type.equalsIgnoreCase("SELECT * FROM cities ORDER BY")){
+            return select(command, "ONLY ORDER BY", "cities");
+
+        } else if(type.equalsIgnoreCase("SELECT * FROM countries ORDER BY")){
+            return select(command, "ONLY ORDER BY", "countries");
+
         } else if (type.equalsIgnoreCase("SELECT * FROM countries")) {
             return select(command, "*", "countries");
 
@@ -86,28 +92,89 @@ public class GeographySystemController {
     }
 
     public String commandType(String command) throws WrittenFormatException {
+        String[] parts = command.split("");
+        int amountOfBrackets = 0;
+        int amountOfCommas = 0;
+
+        if(command.contains("SELECT * FROM cities ORDER BY") && !command.contains("WHERE")){
+            return "SELECT * FROM cities ORDER BY";
+
+
+        } else if(command.contains("SELECT * FROM countries ORDER BY") && !command.contains("WHERE")) {
+            return "SELECT * FROM countries ORDER BY";
+        }
+
+        for (int i = 0; i < parts.length; i++) {
+            if(parts[i].equalsIgnoreCase("(") || parts[i].equalsIgnoreCase(")")){
+                amountOfBrackets++;
+            }
+            if(parts[i].equalsIgnoreCase(",")){
+                amountOfCommas++;
+            }
+        }
+
         if(command.contains("INSERT INTO countries(id, name, population, countryCode) VALUES")) {
-            return "INSERT INTO countries";
+            if(amountOfBrackets!=4 || amountOfCommas!=6){
+                throw new WrittenFormatException("Written format isn't correct");
+            } else {
+                return "INSERT INTO countries";
+            }
 
         } else if(command.contains("INSERT INTO cities(id, name, countryID, population) VALUES")){
-            return "INSERT INTO cities";
+            if(amountOfBrackets!=4 || amountOfCommas!=6){
+                throw new WrittenFormatException("Written format isn't correct");
+            } else {
+                return "INSERT INTO cities";
+            }
 
         } else if(command.contains("DELETE FROM countries WHERE")) {
-            return "DELETE FROM countries WHERE";
+            if(command.contains("name") || command.contains("id") || command.contains("countryCode")){
+                if(!parts[parts.length-1].equalsIgnoreCase("'")){
+                    throw new WrittenFormatException("Written format isn't correct");
+                } else {
+                    return "DELETE FROM countries WHERE";
+                }
+            } else {
+                return "DELETE FROM countries WHERE";
+            }
 
         } else if(command.contains("DELETE FROM cities WHERE")) {
-            return "DELETE FROM cities WHERE";
+            if(command.contains("name") || command.contains("id") || command.contains("countryID")){
+                if(!parts[parts.length-1].equalsIgnoreCase("'")){
+                    throw new WrittenFormatException("Written format isn't correct");
+                } else {
+                    return "DELETE FROM cities WHERE";
+                }
+            } else {
+                return "DELETE FROM cities WHERE";
+            }
 
         } else if(command.contains("SELECT * FROM countries WHERE") && !command.contains("ORDER BY")){
-            return "SELECT * FROM countries WHERE";
+            if(command.contains("name") || command.contains("id") || command.contains("countryCode")){
+                if(!parts[parts.length-1].equalsIgnoreCase("'")){
+                    throw new WrittenFormatException("Written format isn't correct");
+                } else {
+                    return "SELECT * FROM countries WHERE";
+                }
+            } else {
+                return "SELECT * FROM countries WHERE";
+            }
 
         } else if(command.contains("SELECT * FROM cities WHERE") && !command.contains("ORDER BY")) {
-            return "SELECT * FROM cities WHERE";
+            if(command.contains("name") || command.contains("id") || command.contains("countryID")){
+                if(!parts[parts.length-1].equalsIgnoreCase("'")){
+                    throw new WrittenFormatException("Written format isn't correct");
+                } else {
+                    return "SELECT * FROM cities WHERE";
+                }
+            } else {
+                return "SELECT * FROM cities WHERE";
+            }
 
         } else if(command.contains("SELECT * FROM countries WHERE") && command.contains("ORDER BY")){
             return "SELECT * FROM countries WHERE ORDER BY";
 
-        } else if(command.contains("SELECT * FROM cities WHERE") && command.contains("ORDER BY")){
+        } else if(command.contains("SELECT * FROM cities WHERE") && command.contains("ORDER BY")) {
             return "SELECT * FROM cities WHERE ORDER BY";
 
         } else if(command.contains("SELECT * FROM countries")){
@@ -150,6 +217,199 @@ public class GeographySystemController {
             parts = command.split(" ");
         }
 
+        if(condition.equalsIgnoreCase("ONLY ORDER BY")){
+            if(where.equalsIgnoreCase("countries")){
+                String[] partsOnlyOrderBy = command.split(" ");
+                // SELECT * FROM cities ORDER BY name
+                if(partsOnlyOrderBy.length!=7){
+                    throw new WrittenFormatException("Written format isn't correct");
+                }
+
+                String conditionToOrder = partsOnlyOrderBy[6];
+
+                if(conditionToOrder.equalsIgnoreCase("id")){
+                    Country[] unsorted = new Country[countryArrayList.size()];
+                    unsorted = countryArrayList.toArray(unsorted);
+                    if(!sign.equalsIgnoreCase("=")){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (Country country:
+                            orderByList) {
+                        msg += "- NAME: "+country.getName()+" | ID: "+country.getId()+" | POPULATION: "+country.getPopulationInMillion()+" | PHONE CODE: "+country.getPhoneCode()+"\n";
+                    }
+
+                    countryArrayList = new ArrayList<>();
+                    Collections.addAll(countryArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("name")){
+                    Country[] unsorted = new Country[countryArrayList.size()];
+                    unsorted = countryArrayList.toArray(unsorted);
+                    if(!sign.equalsIgnoreCase("=")){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (Country country:
+                            orderByList) {
+                        msg += "- NAME: "+country.getName()+" | ID: "+country.getId()+" | POPULATION: "+country.getPopulationInMillion()+" | PHONE CODE: "+country.getPhoneCode()+"\n";
+                    }
+
+                    countryArrayList = new ArrayList<>();
+                    Collections.addAll(countryArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("population")){
+                    Country[] unsorted = new Country[countryArrayList.size()];
+                    unsorted = countryArrayList.toArray(unsorted);
+
+                    ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (Country country:
+                            orderByList) {
+                        msg += "- NAME: "+country.getName()+" | ID: "+country.getId()+" | POPULATION: "+country.getPopulationInMillion()+" | PHONE CODE: "+country.getPhoneCode()+"\n";
+                    }
+
+                    countryArrayList = new ArrayList<>();
+                    Collections.addAll(countryArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("countryCode")){
+                    Country[] unsorted = new Country[countryArrayList.size()];
+                    unsorted = countryArrayList.toArray(unsorted);
+
+                    ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (Country country:
+                            orderByList) {
+                        msg += "- NAME: "+country.getName()+" | ID: "+country.getId()+" | POPULATION: "+country.getPopulationInMillion()+" | PHONE CODE: "+country.getPhoneCode()+"\n";
+                    }
+
+                    countryArrayList = new ArrayList<>();
+                    Collections.addAll(countryArrayList, unsorted);
+                    return msg;
+
+                } else {
+                    throw new WrittenFormatException("Written format isn't correct");
+                }
+
+            } else if(where.equalsIgnoreCase("cities")){
+                String[] partsOnlyOrderBy = command.split(" ");
+                // SELECT * FROM cities ORDER BY name
+                if(partsOnlyOrderBy.length!=7){
+
+                    throw new WrittenFormatException("Written format isn't correct");
+                }
+
+                String conditionToOrder = partsOnlyOrderBy[6];
+
+                if(conditionToOrder.equalsIgnoreCase("id")){
+                    City[] unsorted = new City[cityArrayList.size()];
+                    unsorted = cityArrayList.toArray(unsorted);
+                    if(!sign.equalsIgnoreCase("=")){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    ArrayList<City> orderByList = orderByCity(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (City city:
+                            orderByList) {
+                        msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
+                    }
+
+                    cityArrayList = new ArrayList<>();
+                    Collections.addAll(cityArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("name")){
+                    City[] unsorted = new City[cityArrayList.size()];
+                    unsorted = cityArrayList.toArray(unsorted);
+                    if(!sign.equalsIgnoreCase("=")){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    ArrayList<City> orderByList = orderByCity(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (City city:
+                            orderByList) {
+                        msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
+                    }
+
+                    cityArrayList = new ArrayList<>();
+                    Collections.addAll(cityArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("population")){
+                    City[] unsorted = new City[cityArrayList.size()];
+                    unsorted = cityArrayList.toArray(unsorted);
+
+                    ArrayList<City> orderByList = orderByCity(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (City city:
+                            orderByList) {
+                        msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
+                    }
+
+                    cityArrayList = new ArrayList<>();
+                    Collections.addAll(cityArrayList, unsorted);
+                    return msg;
+
+                } else if(attribute.equalsIgnoreCase("countryID")){
+                    City[] unsorted = new City[cityArrayList.size()];
+                    unsorted = cityArrayList.toArray(unsorted);
+                    if(!sign.equalsIgnoreCase("=")){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    ArrayList<City> orderByList = orderByCity(conditionToOrder);
+                    if(orderByList==null){
+                        throw new WrittenFormatException("Written format isn't correct");
+                    }
+
+                    for (City city:
+                            orderByList) {
+                        msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
+                    }
+
+                    cityArrayList = new ArrayList<>();
+                    Collections.addAll(cityArrayList, unsorted);
+                    return msg;
+
+                } else {
+                    throw new WrittenFormatException("Written format isn't correct");
+                }
+
+            } else {
+                throw new WrittenFormatException("Written format isn't correct");
+            }
+        }
+
+
         if(condition.equalsIgnoreCase("*")){
             if(parts.length!=4){
                 throw new WrittenFormatException("Written format isn't correct");
@@ -178,8 +438,6 @@ public class GeographySystemController {
         }
 
         if(where.equalsIgnoreCase("countries")){
-            System.out.println(condition);
-            System.out.println(attribute);
             if(condition.equalsIgnoreCase("*")){
                 for (Country country:
                         countryArrayList) {
@@ -250,7 +508,6 @@ public class GeographySystemController {
                             }
                         }
                     } else {
-                        System.out.println("condition is "+conditionR3);
                         for (Country country:
                                 countryArrayList) {
                             if(country.getPopulationInMillion()>conditionR3){
@@ -515,7 +772,7 @@ public class GeographySystemController {
                     }
                     return msg;
 
-                } else if(attribute.equalsIgnoreCase("countryId")){
+                } else if(attribute.equalsIgnoreCase("country")){
                     if(!sign.equalsIgnoreCase("=")){
                         throw new WrittenFormatException("Written format isn't correct");
                     }
@@ -527,9 +784,18 @@ public class GeographySystemController {
 
                     String conditionR3 = conditionR2[1];
 
+                    String countryId = "";
+
+                    for (int i=0; i<countryArrayList.size(); i++) {
+                        if(countryArrayList.get(i).getName().equalsIgnoreCase(conditionR3)){
+                            countryId = countryArrayList.get(i).getId();
+                            break;
+                        }
+                    } // for each
+
                     for (City city:
                             cityArrayList) {
-                        if(city.getCountryId().equalsIgnoreCase(conditionR3)){
+                        if(city.getCountryId().equalsIgnoreCase(countryId)){
                             msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
                         }
                     }
@@ -646,7 +912,7 @@ public class GeographySystemController {
                     Collections.addAll(countryArrayList, unsorted);
                     return msg;
 
-                } else if(attribute.equalsIgnoreCase("countryId")){
+                } else if(attribute.equalsIgnoreCase("country")){
                     Country[] unsorted = new Country[countryArrayList.size()];
                     unsorted = countryArrayList.toArray(unsorted);
 
@@ -668,9 +934,18 @@ public class GeographySystemController {
                         throw new WrittenFormatException("Written format isn't correct");
                     }
 
+                    String countryId = "";
+
+                    for (int i=0; i<countryArrayList.size(); i++) {
+                        if(countryArrayList.get(i).getName().equalsIgnoreCase(conditionR3)){
+                            countryId = countryArrayList.get(i).getId();
+                            break;
+                        }
+                    } // for each
+
                     for (City city:
                             orderByList) {
-                        if(city.getCountryId().equalsIgnoreCase(conditionR3)){
+                        if(city.getCountryId().equalsIgnoreCase(countryId)){
                             msg += "- NAME: "+city.getName()+" | ID: "+city.getId()+" | POPULATION: "+city.getPopulationInMillion()+" | COUNTRY ID: "+city.getCountryId()+"\n";
                         }
                     }
@@ -756,7 +1031,6 @@ public class GeographySystemController {
             cityArrayList.add(new City(id, name, countryID, populationInMillion));
             return true;
         } else {
-            System.out.println("no es insert into cities ni countires");
             throw new WrittenFormatException("Written format isn't correct");
         }
     } // insert into method
@@ -781,7 +1055,6 @@ public class GeographySystemController {
         String[] deleteParts = command.split(" ");
 
         if(deleteParts.length!=7){
-            System.out.println("first split not 7 length");
             throw new WrittenFormatException("Written format isn't correct");
         }
 
@@ -804,7 +1077,6 @@ public class GeographySystemController {
         } else if(command.contains("=")){
             equals = true;
         } else {
-            System.out.println("doesnt contains a sign");
             throw new WrittenFormatException("Written format isn't correct");
         }
 
@@ -812,7 +1084,7 @@ public class GeographySystemController {
             if(attribute.equalsIgnoreCase("name")) {
                 boolean removed = false;
 
-                for (int i = 0; i < countryArrayList.size(); i++) {
+                for (int i=countryArrayList.size()-1; i>=0; i--) {
                     if (countryArrayList.get(i).getName().equalsIgnoreCase(condition)) {
                         countryArrayList.remove(i);
                         removed = true;
@@ -823,7 +1095,7 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("id")){
                 boolean removed = false;
 
-                for (int i = 0; i < countryArrayList.size(); i++) {
+                for (int i=countryArrayList.size()-1; i>=0; i--) {
                     if (countryArrayList.get(i).getId().equalsIgnoreCase(condition)) {
                         countryArrayList.remove(i);
                         removed = true;
@@ -834,7 +1106,7 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("population")){
                 boolean removed = false;
 
-                for (int i=0; i<countryArrayList.size(); i++) {
+                for (int i=countryArrayList.size()-1; i>=0; i--) {
 
                     if(major){
                         if(countryArrayList.get(i).getPopulationInMillion()>Double.parseDouble(condition)){
@@ -867,7 +1139,7 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("countryCode")){
                 boolean removed = false;
 
-                for (int i=0; i<countryArrayList.size(); i++){
+                for (int i=countryArrayList.size()-1; i>=0; i--){
                     if(countryArrayList.get(i).getPhoneCode().equalsIgnoreCase(condition)){
                         countryArrayList.remove(i);
                         removed = true;
@@ -875,15 +1147,13 @@ public class GeographySystemController {
                 }
                 return removed;
             } else {
-                System.out.println("the condition isnt popu or name or id");
-                System.out.println(attribute);
                 throw new WrittenFormatException("Written format isn't correct");
             }
         } else if(where.equalsIgnoreCase("cities")){
             if(attribute.equalsIgnoreCase("name")) {
                 boolean removed = false;
 
-                for (int i = 0; i < cityArrayList.size(); i++) {
+                for (int i=cityArrayList.size()-1; i>=0; i--) {
                     if (cityArrayList.get(i).getName().equalsIgnoreCase(condition)) {
                         cityArrayList.remove(i);
                         removed = true;
@@ -893,7 +1163,7 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("id")){
                 boolean removed = false;
 
-                for (int i = 0; i < cityArrayList.size(); i++) {
+                for (int i=cityArrayList.size()-1; i>=0; i--) {
                     if (cityArrayList.get(i).getId().equalsIgnoreCase(condition)) {
                         cityArrayList.remove(i);
                         removed = true;
@@ -903,18 +1173,15 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("country")) {
                 boolean removed = false;
                 String countryId = "";
-                System.out.println("la condition searched es "+condition);
 
                 for (int i=0; i<countryArrayList.size(); i++) {
-                    System.out.println("esta searching el country bro");
                     if(countryArrayList.get(i).getName().equalsIgnoreCase(condition)){
                         countryId = countryArrayList.get(i).getId();
-                        System.out.println("encontro el id del pais");
                         break;
                     }
                 } // for each
-
-                for (int i=0; i<cityArrayList.size(); i++) {
+                System.out.println(countryId);
+                for (int i=cityArrayList.size()-1; i>=0; i--) {
                     if(cityArrayList.get(i).getCountryId().equalsIgnoreCase(countryId)){
                         cityArrayList.remove(i);
                         removed = true;
@@ -925,7 +1192,7 @@ public class GeographySystemController {
             } else if(attribute.equalsIgnoreCase("population")){
                 boolean removed = false;
 
-                for (int i=0; i<cityArrayList.size(); i++) {
+                for (int i=cityArrayList.size()-1; i>=0; i--) {
 
                     if(major){
                         if(cityArrayList.get(i).getPopulationInMillion()>Double.parseDouble(condition)){
@@ -957,11 +1224,9 @@ public class GeographySystemController {
                 return removed;
 
             } else {
-                System.out.println("isnt condition popu or id or name");
                 throw new WrittenFormatException("Written format isn't correct");
             }
         } else {
-            System.out.println("isnt countries or cities");
             throw new WrittenFormatException("Written format isn't correct");
         }
     } // delete
