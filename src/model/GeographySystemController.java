@@ -32,6 +32,13 @@ public class GeographySystemController {
 
         String type = commandType(command);
 
+        if (type.equalsIgnoreCase("SELECT * FROM cities ORDER BY")){
+            return select(command, "ONLY ORDER BY", "cities");
+
+        } else if(type.equalsIgnoreCase("SELECT * FROM countries ORDER BY")) {
+            return select(command, "ONLY ORDER BY", "countries");
+        }
+
         if (type.equalsIgnoreCase("INSERT INTO countries")) {
 
             if(insertInto(command, "countries")){
@@ -74,12 +81,6 @@ public class GeographySystemController {
         } else if (type.equalsIgnoreCase("SELECT * FROM cities WHERE ORDER BY")) {
             return select(command, "ORDER BY", "cities");
 
-        } else if (type.equalsIgnoreCase("SELECT * FROM cities ORDER BY")){
-            return select(command, "ONLY ORDER BY", "cities");
-
-        } else if(type.equalsIgnoreCase("SELECT * FROM countries ORDER BY")){
-            return select(command, "ONLY ORDER BY", "countries");
-
         } else if (type.equalsIgnoreCase("SELECT * FROM countries")) {
             return select(command, "*", "countries");
 
@@ -87,6 +88,7 @@ public class GeographySystemController {
             return select(command, "*", "cities");
 
         } else {
+            System.out.println("tira exceptionS");
             throw new WrittenFormatException("Written format isn't correct");
         }
     }
@@ -201,6 +203,7 @@ public class GeographySystemController {
 
         if(command.contains("<=") || command.contains(">=") || command.contains("<<") || command.contains(">>") || command.contains("<>") ||
                 command.contains("><") || command.contains("=>") || command.contains("=<")){
+            System.out.println("tira exception por signos");
             throw new WrittenFormatException("Written format isn't correct");
         }
 
@@ -218,21 +221,22 @@ public class GeographySystemController {
         }
 
         if(condition.equalsIgnoreCase("ONLY ORDER BY")){
+
+            String[] partsOnlyOrderBy = command.split(" ");
+            // SELECT * FROM cities ORDER BY name
+            if(partsOnlyOrderBy.length!=7){
+                throw new WrittenFormatException("Written format isn't correct");
+            }
+
+            attribute = partsOnlyOrderBy[6];
+
             if(where.equalsIgnoreCase("countries")){
-                String[] partsOnlyOrderBy = command.split(" ");
-                // SELECT * FROM cities ORDER BY name
-                if(partsOnlyOrderBy.length!=7){
-                    throw new WrittenFormatException("Written format isn't correct");
-                }
 
                 String conditionToOrder = partsOnlyOrderBy[6];
 
                 if(conditionToOrder.equalsIgnoreCase("id")){
                     Country[] unsorted = new Country[countryArrayList.size()];
                     unsorted = countryArrayList.toArray(unsorted);
-                    if(!sign.equalsIgnoreCase("=")){
-                        throw new WrittenFormatException("Written format isn't correct");
-                    }
 
                     ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
                     if(orderByList==null){
@@ -249,14 +253,13 @@ public class GeographySystemController {
                     return msg;
 
                 } else if(attribute.equalsIgnoreCase("name")){
+                    System.out.println("entra porque atributo es name");
                     Country[] unsorted = new Country[countryArrayList.size()];
                     unsorted = countryArrayList.toArray(unsorted);
-                    if(!sign.equalsIgnoreCase("=")){
-                        throw new WrittenFormatException("Written format isn't correct");
-                    }
 
                     ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
                     if(orderByList==null){
+                        System.out.println("tira eception porque list es nula");
                         throw new WrittenFormatException("Written format isn't correct");
                     }
 
@@ -310,21 +313,12 @@ public class GeographySystemController {
                 }
 
             } else if(where.equalsIgnoreCase("cities")){
-                String[] partsOnlyOrderBy = command.split(" ");
-                // SELECT * FROM cities ORDER BY name
-                if(partsOnlyOrderBy.length!=7){
-
-                    throw new WrittenFormatException("Written format isn't correct");
-                }
 
                 String conditionToOrder = partsOnlyOrderBy[6];
 
                 if(conditionToOrder.equalsIgnoreCase("id")){
                     City[] unsorted = new City[cityArrayList.size()];
                     unsorted = cityArrayList.toArray(unsorted);
-                    if(!sign.equalsIgnoreCase("=")){
-                        throw new WrittenFormatException("Written format isn't correct");
-                    }
 
                     ArrayList<City> orderByList = orderByCity(conditionToOrder);
                     if(orderByList==null){
@@ -343,9 +337,6 @@ public class GeographySystemController {
                 } else if(attribute.equalsIgnoreCase("name")){
                     City[] unsorted = new City[cityArrayList.size()];
                     unsorted = cityArrayList.toArray(unsorted);
-                    if(!sign.equalsIgnoreCase("=")){
-                        throw new WrittenFormatException("Written format isn't correct");
-                    }
 
                     ArrayList<City> orderByList = orderByCity(conditionToOrder);
                     if(orderByList==null){
@@ -382,9 +373,6 @@ public class GeographySystemController {
                 } else if(attribute.equalsIgnoreCase("countryID")){
                     City[] unsorted = new City[cityArrayList.size()];
                     unsorted = cityArrayList.toArray(unsorted);
-                    if(!sign.equalsIgnoreCase("=")){
-                        throw new WrittenFormatException("Written format isn't correct");
-                    }
 
                     ArrayList<City> orderByList = orderByCity(conditionToOrder);
                     if(orderByList==null){
@@ -401,10 +389,12 @@ public class GeographySystemController {
                     return msg;
 
                 } else {
+                    System.out.println("tira exception porque atributo no es nada");
                     throw new WrittenFormatException("Written format isn't correct");
                 }
 
             } else {
+                System.out.println("tira exception porque no es countries ni cities");
                 throw new WrittenFormatException("Written format isn't correct");
             }
         }
