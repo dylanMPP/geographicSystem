@@ -88,7 +88,6 @@ public class GeographySystemController {
             return select(command, "*", "cities");
 
         } else {
-            System.out.println("tira exceptionS");
             throw new WrittenFormatException("Written format isn't correct");
         }
     }
@@ -203,7 +202,6 @@ public class GeographySystemController {
 
         if(command.contains("<=") || command.contains(">=") || command.contains("<<") || command.contains(">>") || command.contains("<>") ||
                 command.contains("><") || command.contains("=>") || command.contains("=<")){
-            System.out.println("tira exception por signos");
             throw new WrittenFormatException("Written format isn't correct");
         }
 
@@ -253,13 +251,11 @@ public class GeographySystemController {
                     return msg;
 
                 } else if(attribute.equalsIgnoreCase("name")){
-                    System.out.println("entra porque atributo es name");
                     Country[] unsorted = new Country[countryArrayList.size()];
                     unsorted = countryArrayList.toArray(unsorted);
 
                     ArrayList<Country> orderByList = orderByCountry(conditionToOrder);
                     if(orderByList==null){
-                        System.out.println("tira eception porque list es nula");
                         throw new WrittenFormatException("Written format isn't correct");
                     }
 
@@ -389,12 +385,10 @@ public class GeographySystemController {
                     return msg;
 
                 } else {
-                    System.out.println("tira exception porque atributo no es nada");
                     throw new WrittenFormatException("Written format isn't correct");
                 }
 
             } else {
-                System.out.println("tira exception porque no es countries ni cities");
                 throw new WrittenFormatException("Written format isn't correct");
             }
         }
@@ -575,7 +569,6 @@ public class GeographySystemController {
 
                     String[] conditionR2 = conditionR.split("'");
                     String[] orderBy2 = orderBy.split(" ");
-                    System.out.println(conditionR2.length+" "+orderBy2.length);
                     if(conditionR2.length!=3 || orderBy2.length!=2){
                         throw new WrittenFormatException("Written format isn't correct");
                     }
@@ -1170,7 +1163,6 @@ public class GeographySystemController {
                         break;
                     }
                 } // for each
-                System.out.println(countryId);
                 for (int i=cityArrayList.size()-1; i>=0; i--) {
                     if(cityArrayList.get(i).getCountryId().equalsIgnoreCase(countryId)){
                         cityArrayList.remove(i);
@@ -1273,7 +1265,6 @@ public class GeographySystemController {
             if((line = reader.readLine())!=null){
                 json = line;
             }
-            System.out.println(line);
             fis.close();
 
             JsonReader jsonReader = new JsonReader(new StringReader(json));
@@ -1308,7 +1299,7 @@ public class GeographySystemController {
 
             while((line = reader.readLine())!=null){
                 imported = line;
-                System.out.println(imported);
+
                 try {
                     if(callCommandMethod(imported).equalsIgnoreCase("")){
                         return "";
